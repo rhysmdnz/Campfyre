@@ -122,12 +122,12 @@ ws.on('new post', function(postData) {
 		highlighter(postData.id);
 
 		//Sort the comment replies
-		for (var i = 0; i < postData.comments.length; ++i) if (postData.comments[i].parentComment) {
+		for (var i = 0; i < postData.comments.length; ++i) if (postData.comments[i].parentcomment) {
 			//Put the comment in the comment replies div for its parent comment
-			$('#comment'+postData.comments[i].id).appendTo('#replies'+postData.comments[i].parentComment);
+			$('#comment'+postData.comments[i].id).appendTo('#replies'+postData.comments[i].parentcomment);
 
 			//Remove comments too deep and make continue thread buttons
-			if ($('#comment'+postData.comments[i].parentComment).parents().length >= 13 || !$('#comment'+postData.comments[i].parentComment).parents().length) {
+			if ($('#comment'+postData.comments[i].parentcomment).parents().length >= 13 || !$('#comment'+postData.comments[i].parentcomment).parents().length) {
 				$('#comment'+postData.comments[i].id).remove();
 			}
 			if ($('#comment'+postData.comments[i].id).parents().length == 13) {
@@ -162,11 +162,11 @@ ws.on('new comment', function(commentData) {
 		break;
 	}
 	newHTML = newHTML + "</p>";
-	if ($('#comment'+commentData.parentComment).parents().length >= 13) {
+	if ($('#comment'+commentData.parentcomment).parents().length >= 13) {
 		return;
 	}
-	else if ($('#comment'+commentData.parentComment).length === 0) {
-		if (commentData.parentComment && !commentData.getChildren) {
+	else if ($('#comment'+commentData.parentcomment).length === 0) {
+		if (commentData.parentcomment && !commentData.getChildren) {
 			return;
 		}
 		else {
@@ -188,9 +188,9 @@ ws.on('new comment', function(commentData) {
 
 
 	//Sort the comment replies
-	if (commentData.parentComment) {
+	if (commentData.parentcomment) {
 		//Put the comment in the comment replies div for its parent comment
-		$('#comment'+commentData.id).appendTo('#replies'+commentData.parentComment);
+		$('#comment'+commentData.id).appendTo('#replies'+commentData.parentcomment);
 	}
 
 	if ($('#comment'+commentData.id).parents().length == 13) {
