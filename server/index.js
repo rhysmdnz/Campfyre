@@ -52,6 +52,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 			console.log(post);
 			con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(i, post, e, comments) {
 				if (e) throw e;
+				console.log(comments);
 
 				if (comments.rows.length === 1) {
 					post.commentNum = comments.rows.length+' comment';
