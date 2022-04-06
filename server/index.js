@@ -5,30 +5,18 @@ function addslashes(str) {
 var app = require('express')();
 var http = require('http').Server(app);
 var ws = require('socket.io')(http);
-var mysql = require('mysql');
 var crypto = require('crypto');
+const { Client } = require('pg')
+const con = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+con.connect();
 
-var dbHost = process.env['CAMPFYRE_HOST'];
-var dbName = process.env['CAMPFYRE_DB_NAME'];
-var dbUsername = process.env['CAMPFYRE_DB_USER'];
-var dbPassword = process.env['CAMPFYRE_DB_PASS'];
 var salt = process.env['CAMPFYRE_SALT'];
 var adminId = process.env['CAMPFYRE_ADMIN_ID'];
-
-//Connect to the database
-mysqlDetails = {
-	host: dbHost,
-	user: dbUsername,
-	database: dbName,
-	charset: 'utf8mb4'
-}
-if (dbPassword) {
-	mysqlDetails.password = dbPassword;
-}
-var con = mysql.createConnection(mysqlDetails);
-con.connect(function(e) {
-	if (e) throw e;
-});
 
 // This is all horrific code, lets make it more horrific with some push notification stuff
 // campfyreId => socket
