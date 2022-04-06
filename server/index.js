@@ -32,14 +32,14 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 			search = search.substr(1, search.length);
 			extraChar = "#";
 		}
-		var query = "SELECT * FROM posts WHERE LOWER(`post`) REGEXP '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
+		var query = "SELECT * FROM posts WHERE LOWER(\"post\") REGEXP '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 	}
 	else {
 		if (user) {
-			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' AND `hash_id` = "+format.literal(user)+" ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
+			var query = "SELECT * FROM posts WHERE \"post\" NOT LIKE '%#bonfyre%' AND \"hash_id\" = "+format.literal(user)+" ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 		}
 		else {
-			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
+			var query = "SELECT * FROM posts WHERE \"post\" NOT LIKE '%#bonfyre%' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 		}
 	}
 
@@ -49,7 +49,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 		//Send the posts to the user
 		for (var i = 0; i < posts.length; ++i) {
 			var post = posts[i];
-			con.query('SELECT * FROM comments WHERE `parent` = '+post.id+';', (function(i, post, e, comments) {
+			con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(i, post, e, comments) {
 				if (e) throw e;
 
 				if (comments.length === 1) {
@@ -75,7 +75,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 				}
 
 				//Are we subscribed to this post?
-				con.query("SELECT `notifyList` FROM `posts` WHERE `id` = '"+addslashes(post.id)+"';", function(e, results) {
+				con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
 					var notifyList = results[0].notifyList;
 					if (notifyList) {
 						notifyList = JSON.parse(notifyList);
@@ -102,7 +102,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 
 function stoke(id, ip, socket) {
 	//Check the user hasn't already voted
-	con.query("SELECT `voters` FROM posts WHERE `id` = '"+id+"'", function(e, voters) {
+	con.query("SELECT \"voters\" FROM posts WHERE \"id\" = '"+id+"'", function(e, voters) {
 		if (e) throw e;
 
 		if (voters[0].voters){
@@ -113,13 +113,13 @@ function stoke(id, ip, socket) {
 		}
 		if (voters.indexOf(ip) == -1) {
 			//Stoke the post
-			con.query("UPDATE `posts` SET `voters` = IFNULL(CONCAT(`voters`, ',"+ip+"'), '"+ip+"') WHERE `id` = '"+format.literal(id)+"';", function (e) {
+			con.query("UPDATE \"posts\" SET \"voters\" = IFNULL(CONCAT(\"voters\", ',"+ip+"'), '"+ip+"') WHERE \"id\" = '"+format.literal(id)+"';", function (e) {
 				if (e) throw e;
-				con.query("UPDATE `posts` SET `score` = `score` + 1 WHERE `id` = '"+format.literal(id)+"';");
+				con.query("UPDATE \"posts\" SET \"score\" = \"score\" + 1 WHERE \"id\" = '"+format.literal(id)+"';");
 				socket.emit('success message', JSON.stringify({title: 'Post stoked', body: ''}));
 
 				//Tell everyone about the stoke
-				con.query("SELECT `score` FROM posts WHERE `id` = '"+format.literal(id)+"';", function (e, posts) {
+				con.query("SELECT \"score\" FROM posts WHERE \"id\" = '"+format.literal(id)+"';", function (e, posts) {
 					if (e) throw e;
 
 					ws.emit('post stoked', JSON.stringify({
@@ -153,7 +153,7 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 	var spamming = false;
 
 	//Catch spammers
-	con.query("SELECT `ip` FROM posts ORDER BY `id` DESC LIMIT 3", function (e, results) {
+	con.query("SELECT \"ip\" FROM posts ORDER BY \"id\" DESC LIMIT 3", function (e, results) {
 		if (e) throw e;
 
 		// if (results[0].ip == ip && results[1].ip == ip && results[2].ip == ip) {
@@ -180,13 +180,13 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 				con.query("INSERT INTO posts (post, ip, hash_id, nsfw, time, attachment) VALUES ("+safeText+", "+format.literal(ip)+", "+format.literal(hash(salt+ip))+", "+nsfw+", "+time+", "+attachment+");", function (e) {
 					if (e) throw e;
 
-					con.query("SELECT * FROM posts WHERE `post` = "+safeText+" AND `post` NOT LIKE '%#bonfyre%' AND `ip` = '"+ip+"' AND `time` = '"+time+"';", function (e, posts) {
+					con.query("SELECT * FROM posts WHERE \"post\" = "+safeText+" AND \"post\" NOT LIKE '%#bonfyre%' AND \"ip\" = '"+ip+"' AND \"time\" = '"+time+"';", function (e, posts) {
 						if (e) throw e;
 
 						//Send the posts to the user
 						if (posts.length > 0) {
 							var post = posts[posts.length-1];
-							con.query('SELECT * FROM comments WHERE `parent` = '+post.id+';', (function(post, e, comments) {
+							con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(post, e, comments) {
 								if (e) throw e;
 
 								if (comments.length === 1) {
@@ -250,13 +250,13 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 				//Tell the user and show the comment
 				socket.emit('success message', JSON.stringify({title: 'Comment submitted', body: ''}));
 
-				con.query("SELECT * FROM comments WHERE `comment` = "+safeText+" AND `ip` = '"+ip+"' AND `time` = '"+time+"';", function(e, commentData) {
+				con.query("SELECT * FROM comments WHERE \"comment\" = "+safeText+" AND \"ip\" = '"+ip+"' AND \"time\" = '"+time+"';", function(e, commentData) {
 					var commentData = commentData[commentData.length-1];
 					commentData.ip = 'http://robohash.org/'+hash(salt+commentData.ip)+'.png?set=set4&size=64x64'
 					ws.emit('new comment', JSON.stringify(commentData));
 
 					//Notifications
-					con.query("SELECT `notifyList` FROM `posts` WHERE `id` = '"+addslashes(parent)+"';", function(e, results) {
+					con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(parent)+"';", function(e, results) {
 							var notifyList = results[0].notifyList;
 							var update = false;
 							if (notifyList) {
@@ -265,7 +265,7 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 									if (notifyList.IPs[i] === ip) continue;
 
 									const ipToNotify = notifyList.IPs[i];
-									con.query("INSERT INTO `notifications` (ip, commentText, postID, commentID) VALUES ("+format.literal(ipToNotify)+", "+safeText+", "+format.literal(parent)+", "+commentData.id+");", () => {
+									con.query("INSERT INTO \"notifications\" (ip, commentText, postID, commentID) VALUES ("+format.literal(ipToNotify)+", "+safeText+", "+format.literal(parent)+", "+commentData.id+");", () => {
 										const socketToNotify = users[ipToNotify];
 										if (!!socketToNotify) getNotifications(ipToNotify, socketToNotify);
 									});
@@ -288,7 +288,7 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 }
 
 function getCommentThread(parent, socket) {
-	con.query("SELECT * FROM `comments` WHERE `parentComment` = "+format.literal(parent)+";", function(e, comments) {
+	con.query("SELECT * FROM \"comments\" WHERE \"parentComment\" = "+format.literal(parent)+";", function(e, comments) {
 		if (e) throw e;
 
 		for (var i = 0; i < comments.length; ++i) {
@@ -301,7 +301,7 @@ function getCommentThread(parent, socket) {
 }
 
 function getBulkComments(parent, socket) {
-	con.query("SELECT * FROM `comments` WHERE `parent` = "+format.literal(parent)+";", function(e, comments) {
+	con.query("SELECT * FROM \"comments\" WHERE \"parent\" = "+format.literal(parent)+";", function(e, comments) {
 		if (e) throw e;
 
 		for (var i = 0; i < comments.length; ++i) {
@@ -313,7 +313,7 @@ function getBulkComments(parent, socket) {
 }
 
 function getPostInternal(size, id, ip, callback) {
-	con.query("SELECT * FROM `posts` WHERE `id` = "+format.literal(id)+";", function(e, post) {
+	con.query("SELECT * FROM \"posts\" WHERE \"id\" = "+format.literal(id)+";", function(e, post) {
 		if (!post) {
 			callback({});
 			return;
@@ -323,7 +323,7 @@ function getPostInternal(size, id, ip, callback) {
 			callback({});
 			return;
 		}
-		con.query('SELECT * FROM comments WHERE `parent` = '+post.id+';', (function(post, e, comments) {
+		con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(post, e, comments) {
 			if (e) throw e;
 
 			if (comments.length === 1) {
@@ -343,7 +343,7 @@ function getPostInternal(size, id, ip, callback) {
 			post.loadBottom = false;
 
 			//Are we subscribed to this post?
-			con.query("SELECT `notifyList` FROM `posts` WHERE `id` = '"+addslashes(post.id)+"';", function(e, results) {
+			con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
 				var notifyList = results[0].notifyList;
 				if (notifyList) {
 					notifyList = JSON.parse(notifyList);
@@ -373,7 +373,7 @@ function getPost(size, id, socket, ip) {
 }
 
 function getStokeCount(id, socket) {
-	con.query("SELECT `score` FROM `posts` WHERE `hash_id` = "+format.literal(id)+";", function(e, results) {
+	con.query("SELECT \"score\" FROM \"posts\" WHERE \"hash_id\" = "+format.literal(id)+";", function(e, results) {
 		if (!results) return;
 
 		totalScore = 0;
@@ -387,7 +387,7 @@ function getStokeCount(id, socket) {
 function subscribe(id, subscribe, ip, socket) {
 	if (subscribe) {
 		//Subscribe to new comments
-		con.query("SELECT `notifyList` FROM `posts` WHERE `id` = '"+addslashes(id)+"';", function(e, results) {
+		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
 				var notifyList = results[0].notifyList;
 				var update = false;
 				if (notifyList) {
@@ -405,7 +405,7 @@ function subscribe(id, subscribe, ip, socket) {
 
 				if (update) {
 					//Update database with new array
-					con.query("UPDATE `posts` SET `notifyList` = '"+notifyList+"' WHERE `id` = '"+addslashes(id)+"';", function(e) {
+					con.query("UPDATE \"posts\" SET \"notifyList\" = '"+notifyList+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
 						if (e) socket.emit('error message', JSON.stringify({title: 'Subscription failed', body: 'Please try again later'}));
 
 						socket.emit('success message', JSON.stringify({title: 'Subscribed', body: ''}));
@@ -417,14 +417,14 @@ function subscribe(id, subscribe, ip, socket) {
 		});
 	}
 	else {
-		con.query("SELECT `notifyList` FROM `posts` WHERE `id` = '"+addslashes(id)+"';", function(e, results) {
+		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
 				var notifyList = results[0].notifyList;
 				if (notifyList) {
 					notifyList = JSON.parse(notifyList);
 					if (notifyList.IPs.indexOf(ip) > -1) {
 						notifyList.IPs.splice(notifyList.IPs.indexOf(ip), 1);
 						notifyList = JSON.stringify(notifyList);
-						con.query("UPDATE `posts` SET `notifyList` = '"+notifyList+"' WHERE `id` = '"+addslashes(id)+"';", function(e) {
+						con.query("UPDATE \"posts\" SET \"notifyList\" = '"+notifyList+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
 						if (e) socket.emit('error message', JSON.stringify({title: 'Unsubscription failed', body: 'Please try again later'}));
 
 						socket.emit('success message', JSON.stringify({title: 'Unsubscribed', body: ''}));
@@ -436,7 +436,7 @@ function subscribe(id, subscribe, ip, socket) {
 }
 
 function getNotifications(ip, socket) {
-	con.query("SELECT * FROM `notifications` WHERE `ip` = "+format.literal(ip)+";", function(e, notifications) {
+	con.query("SELECT * FROM \"notifications\" WHERE \"ip\" = "+format.literal(ip)+";", function(e, notifications) {
 		const message = (notifications || [])
 			.map(n => {
 				let tmp = { ...n };
@@ -445,7 +445,7 @@ function getNotifications(ip, socket) {
 			})
 
 		socket.emit('notification', JSON.stringify(message));
-		con.query("DELETE FROM `notifications` WHERE `ip` = '"+addslashes(ip)+"';");
+		con.query("DELETE FROM \"notifications\" WHERE \"ip\" = '"+addslashes(ip)+"';");
 	});
 }
 
