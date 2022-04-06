@@ -113,7 +113,9 @@ function stoke(id, ip, socket) {
 		}
 		if (voters.indexOf(ip) == -1) {
 			//Stoke the post
-			con.query("UPDATE \"posts\" SET \"voters\" = CASE WHEN voters = NULL THEN "+ip+" ELSE CONCAT(\"voters\", ',"+ip+"') WHERE \"id\" = '"+format.literal(id)+"';", function (e) {
+			var test = "UPDATE \"posts\" SET \"voters\" = CASE WHEN voters = NULL THEN "+ip+" ELSE CONCAT(\"voters\", ',"+ip+"') WHERE \"id\" = '"+format.literal(id)+"';";
+			console.log(test);
+			con.query(test, function (e) {
 				if (e) throw e;
 				con.query("UPDATE \"posts\" SET \"score\" = \"score\" + 1 WHERE \"id\" = '"+format.literal(id)+"';");
 				socket.emit('success message', JSON.stringify({title: 'Post stoked', body: ''}));
