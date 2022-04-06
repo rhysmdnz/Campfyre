@@ -32,14 +32,14 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 			search = search.substr(1, search.length);
 			extraChar = "#";
 		}
-		var query = "SELECT * FROM posts WHERE LOWER(`post`) REGEXP '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC LIMIT "+format.literal(startingPost)+", 50;";
+		var query = "SELECT * FROM posts WHERE LOWER(`post`) REGEXP '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 	}
 	else {
 		if (user) {
-			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' AND `hash_id` = "+format.literal(user)+" ORDER BY id DESC LIMIT "+format.literal(startingPost)+", 50;";
+			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' AND `hash_id` = "+format.literal(user)+" ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 		}
 		else {
-			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' ORDER BY id DESC LIMIT "+format.literal(startingPost)+", 50;";
+			var query = "SELECT * FROM posts WHERE `post` NOT LIKE '%#bonfyre%' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 		}
 	}
 
