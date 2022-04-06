@@ -248,7 +248,7 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 
 	if (text && ip && parent) {
 		if (text.length <= 256 && !spamming) {
-			con.query("INSERT INTO comments (comment, ip, parent, parentComment, time) VALUES ("+safeText+", "+format.literal(ip)+", "+format.literal(parent)+", "+format.literal(commentParent)+", '"+time+"');", function (e) {
+			con.query("INSERT INTO comments (comment, ip, parent, parentcomment, time) VALUES ("+safeText+", "+format.literal(ip)+", "+format.literal(parent)+", "+format.literal(commentParent)+", '"+time+"');", function (e) {
 				//Tell the user and show the comment
 				socket.emit('success message', JSON.stringify({title: 'Comment submitted', body: ''}));
 
@@ -290,7 +290,7 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 }
 
 function getCommentThread(parent, socket) {
-	con.query("SELECT * FROM \"comments\" WHERE \"parentComment\" = "+format.literal(parent)+";", function(e, comments) {
+	con.query("SELECT * FROM \"comments\" WHERE \"parentcomment\" = "+format.literal(parent)+";", function(e, comments) {
 		if (e) throw e;
 
 		for (var i = 0; i < comments.rows.length; ++i) {
