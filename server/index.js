@@ -47,23 +47,23 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 		if (e) throw e;
 		
 		//Send the posts to the user
-		for (var i = 0; i < posts.length; ++i) {
-			var post = posts[i];
+		for (var i = 0; i < posts.rows.length; ++i) {
+			var post = posts.rows[i];
 			con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(i, post, e, comments) {
 				if (e) throw e;
 
-				if (comments.length === 1) {
-					post.commentNum = comments.length+' comment';
+				if (comments.rows.length === 1) {
+					post.commentNum = comments.rows.length+' comment';
 				}
 				else {
-					post.commentNum = comments.length+' comments';
+					post.commentNum = comments.rows.length+' comments';
 				}
 
 				for (var j = 0; j < comments.length; ++j) {
-					comments[j].ip = 'http://robohash.org/'+hash(salt+comments[j].ip)+'.png?set=set4&size='+size;
+					comments[j].ip = 'http://robohash.org/'+hash(salt+comments.rows[j].ip)+'.png?set=set4&size='+size;
 				}
 
-				post.comments = comments;
+				post.comments = comments.rows;
 
 				post.ip = 'http://robohash.org/'+post.hash_id+'.png?set=set4&size='+size;
 
@@ -76,7 +76,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 
 				//Are we subscribed to this post?
 				con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
-					var notifyList = results[0].notifyList;
+					var notifyList = results.rows[0].notifyList;
 					if (notifyList) {
 						notifyList = JSON.parse(notifyList);
 						if (notifyList.IPs.indexOf(ip) <= -1) {
@@ -105,7 +105,7 @@ function stoke(id, ip, socket) {
 	con.query("SELECT \"voters\" FROM posts WHERE \"id\" = '"+id+"'", function(e, voters) {
 		if (e) throw e;
 
-		if (voters[0].voters){
+		if (voters.rows[0].voters){
 			voters = voters[0].voters.split(',');
 		}
 		else {
@@ -124,7 +124,7 @@ function stoke(id, ip, socket) {
 
 					ws.emit('post stoked', JSON.stringify({
 						id: format.literal(id),
-						score: posts[0].score
+						score: posts.rows[0].score
 					}));
 				});
 			});
@@ -184,23 +184,23 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 						if (e) throw e;
 
 						//Send the posts to the user
-						if (posts.length > 0) {
-							var post = posts[posts.length-1];
+						if (posts.rows.length > 0) {
+							var post = posts.rows[posts.rows.length-1];
 							con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(post, e, comments) {
 								if (e) throw e;
 
-								if (comments.length === 1) {
-									post.commentNum = comments.length+' comment';
+								if (comments.rows.length === 1) {
+									post.commentNum = comments.rows.length+' comment';
 								}
 								else {
-									post.commentNum = comments.length+' comments';
+									post.commentNum = comments.rows.length+' comments';
 								}
 
-								for (var j = 0; j < comments.length; ++j) {
-									comments[j].ip = 'http://robohash.org/'+hash(salt+comments[j].ip)+'.png?set=set4&size=64x64';
+								for (var j = 0; j < comments.rows.length; ++j) {
+									comments.rows[j].ip = 'http://robohash.org/'+hash(salt+comments.rows[j].ip)+'.png?set=set4&size=64x64';
 								}
 
-								post.comments = comments;
+								post.comments = comments.rows;
 
 								post.ip = 'http://robohash.org/'+hash(salt+post.ip)+'.png?set=set4&size=64x64';
 								post.loadBottom = false;
@@ -251,13 +251,13 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 				socket.emit('success message', JSON.stringify({title: 'Comment submitted', body: ''}));
 
 				con.query("SELECT * FROM comments WHERE \"comment\" = "+safeText+" AND \"ip\" = '"+ip+"' AND \"time\" = '"+time+"';", function(e, commentData) {
-					var commentData = commentData[commentData.length-1];
+					var commentData = commentData.rows[commentData.rows.length-1];
 					commentData.ip = 'http://robohash.org/'+hash(salt+commentData.ip)+'.png?set=set4&size=64x64'
 					ws.emit('new comment', JSON.stringify(commentData));
 
 					//Notifications
 					con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(parent)+"';", function(e, results) {
-							var notifyList = results[0].notifyList;
+							var notifyList = results.rows[0].notifyList;
 							var update = false;
 							if (notifyList) {
 								notifyList = JSON.parse(notifyList);
@@ -291,11 +291,11 @@ function getCommentThread(parent, socket) {
 	con.query("SELECT * FROM \"comments\" WHERE \"parentComment\" = "+format.literal(parent)+";", function(e, comments) {
 		if (e) throw e;
 
-		for (var i = 0; i < comments.length; ++i) {
-			comments[i].ip = 'http://robohash.org/'+hash(salt+comments[i].ip)+'.png?set=set4&size=64x64';
-			comments[i].getChildren = true;
-			comments[i].dontCount = true;
-			socket.emit('new comment', JSON.stringify(comments[i]));
+		for (var i = 0; i < comments.rows.length; ++i) {
+			comments.rows[i].ip = 'http://robohash.org/'+hash(salt+comments.rows[i].ip)+'.png?set=set4&size=64x64';
+			comments.rows[i].getChildren = true;
+			comments.rows[i].dontCount = true;
+			socket.emit('new comment', JSON.stringify(comments.rows[i]));
 		}
 	});
 }
@@ -304,10 +304,10 @@ function getBulkComments(parent, socket) {
 	con.query("SELECT * FROM \"comments\" WHERE \"parent\" = "+format.literal(parent)+";", function(e, comments) {
 		if (e) throw e;
 
-		for (var i = 0; i < comments.length; ++i) {
-			comments[i].ip = 'http://robohash.org/'+hash(salt+comments[i].ip)+'.png?set=set4&size=64x64';
-			comments[i].dontCount = true;
-			socket.emit('new comment', JSON.stringify(comments[i]));
+		for (var i = 0; i < comments.rows.length; ++i) {
+			comments.rows[i].ip = 'http://robohash.org/'+hash(salt+comments.rows[i].ip)+'.png?set=set4&size=64x64';
+			comments.rows[i].dontCount = true;
+			socket.emit('new comment', JSON.stringify(comments.rows[i]));
 		}
 	});
 }
@@ -318,7 +318,7 @@ function getPostInternal(size, id, ip, callback) {
 			callback({});
 			return;
 		}
-		post = post[0];
+		post = post.rows[0];
 		if (!post) {
 			callback({});
 			return;
@@ -326,25 +326,25 @@ function getPostInternal(size, id, ip, callback) {
 		con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(post, e, comments) {
 			if (e) throw e;
 
-			if (comments.length === 1) {
-				post.commentNum = comments.length+' comment';
+			if (comments.rows.length === 1) {
+				post.commentNum = comments.rows.length+' comment';
 			}
 			else {
-				post.commentNum = comments.length+' comments';
+				post.commentNum = comments.rows.length+' comments';
 			}
 
-			for (var j = 0; j < comments.length; ++j) {
-				comments[j].ip = 'http://robohash.org/'+hash(salt+comments[j].ip)+'.png?set=set4&size='+size;
+			for (var j = 0; j < comments.rows.length; ++j) {
+				comments.rows[j].ip = 'http://robohash.org/'+hash(salt+comments.rows[j].ip)+'.png?set=set4&size='+size;
 			}
 
-			post.comments = comments;
+			post.comments = comments.rows;
 
 			post.ip = 'http://robohash.org/'+hash(salt+post.ip)+'.png?set=set4&size='+size;
 			post.loadBottom = false;
 
 			//Are we subscribed to this post?
 			con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
-				var notifyList = results[0].notifyList;
+				var notifyList = results.rows[0].notifyList;
 				if (notifyList) {
 					notifyList = JSON.parse(notifyList);
 					if (notifyList.IPs.indexOf(ip) <= -1) {
@@ -374,11 +374,11 @@ function getPost(size, id, socket, ip) {
 
 function getStokeCount(id, socket) {
 	con.query("SELECT \"score\" FROM \"posts\" WHERE \"hash_id\" = "+format.literal(id)+";", function(e, results) {
-		if (!results) return;
+		if (!results.rows) return;
 
 		totalScore = 0;
-		for (var l = 0; l < results.length; ++l) {
-			totalScore += results[l].score;
+		for (var l = 0; l < results.rows.length; ++l) {
+			totalScore += results.rows[l].score;
 		}
 		socket.emit('score result', JSON.stringify({score: totalScore}));
 	});
@@ -388,7 +388,7 @@ function subscribe(id, subscribe, ip, socket) {
 	if (subscribe) {
 		//Subscribe to new comments
 		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
-				var notifyList = results[0].notifyList;
+				var notifyList = results.rows[0].notifyList;
 				var update = false;
 				if (notifyList) {
 					notifyList = JSON.parse(notifyList);
@@ -418,7 +418,7 @@ function subscribe(id, subscribe, ip, socket) {
 	}
 	else {
 		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
-				var notifyList = results[0].notifyList;
+				var notifyList = results.rows[0].notifyList;
 				if (notifyList) {
 					notifyList = JSON.parse(notifyList);
 					if (notifyList.IPs.indexOf(ip) > -1) {
@@ -437,7 +437,7 @@ function subscribe(id, subscribe, ip, socket) {
 
 function getNotifications(ip, socket) {
 	con.query("SELECT * FROM \"notifications\" WHERE \"ip\" = "+format.literal(ip)+";", function(e, notifications) {
-		const message = (notifications || [])
+		const message = (notifications.rows || [])
 			.map(n => {
 				let tmp = { ...n };
 				delete tmp.ip;
