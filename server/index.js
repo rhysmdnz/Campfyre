@@ -75,7 +75,9 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 				}
 
 				//Are we subscribed to this post?
-				con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
+				var test = "SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';";
+				console.log(test);
+				con.query(test, function(e, results) {
 					if (e) throw e;
 
 					var notifyList = results.rows[0].notifyList;
