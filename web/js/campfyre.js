@@ -3,8 +3,7 @@ var tag = "";
 var loaded = false;
 var page = 1;
 var lastPost = 0;
-var ws = io('ws://'+window.location.hostname+':3973');
-// var ws = io('wss://api.campfyre.memes.nz:443');
+var ws = io('wss://campfyre-memes-nz.herokuapp.com:443');
 var userID = '';
 var currentPageFile = location.pathname.substring(1);
 var topics = ['MicroPad', 'Nick', 'Bitcoin', 'your mum', 'homework', 'procrastination', 'tautology', 'anything', 'spiderman', 'The Doctor', '&#26085;&#26412;', 'a = &Delta;v/&Delta;t', 'The Sims', 'CHIM', 'life', 'stuff', 'the weather', 'python', 'COBOL', 'campfires', 'Google Buzz', 'emoji', 'Totoro', 'Constantine', 'ideas', 'GitHub', 'Android', 'iOS', 'GNU/Linux', 'Arch Linux', 'Ubuntu', 'xkcd', 'tents', 'creeps', 'corn crisps', '#rebellion', 'Briggleybear', 'Dragonborns', 'wabbajacks', '&#3232;_&#3232;', 'Google', 'Apple', 'apples', 'kiwifruit'];
@@ -14,7 +13,7 @@ if (store.get('showNSFW')) {
 	var showNSFW = store.get('showNSFW');
 }
 else {
-	store.set('showNSFW', 0);
+	store.set('showNSFW', false);
 	var showNSFW = store.get('showNSFW');
 }
 
@@ -26,7 +25,7 @@ ws.on('new post', function(postData) {
 		var newHTML = '';
 
 		//Handle NSFW posts
-		if (showNSFW === 0 && postData.nsfw === 1) {
+		if (showNSFW === false && postData.nsfw === true) {
 			return;
 		}
 
@@ -40,7 +39,7 @@ ws.on('new post', function(postData) {
 					newHTML = newHTML + " [admin]";
 					break;
 				}
-				if (postData.nsfw == 1) {
+				if (postData.nsfw === true) {
 					newHTML = newHTML + " [nsfw]";
 				}
 				newHTML = newHTML + "</p>";
@@ -426,7 +425,7 @@ ws.on('post stoked', function(params) {
 });
 
 ws.on('show nsfw', function() {
-	if (showNSFW !== 1) refresh(1);
+	if (showNSFW !== true) refresh(true);
 });
 
 ws.on('score result', function(params) {
@@ -439,7 +438,7 @@ ws.on('notification', function(params) {
 	notifications = JSON.parse(params);
 	for (var i = notifications.length - 1; i >= 0; i--) {
 		var notification = notifications[i];
-		$('#sidebarNotifications').append('<section style="padding: 0.5rem;" class="notification"> <p>'+notification.commentText+'</p> <button class="btn" onclick="replyToComment('+notification.postID+', '+notification.commentID+');">Reply</button> <a class="btn" href="permalink.html?id='+notification.postID+'">View post</a> <button class="btn" onclick="$(this).parent().remove();">Dismiss</button> </section>');
+		$('#sidebarNotifications').append('<section style="padding: 0.5rem;" class="notification"> <p>'+notification.commenttext+'</p> <button class="btn" onclick="replyToComment('+notification.postid+', '+notification.commentid+');">Reply</button> <a class="btn" href="permalink.html?id='+notification.postid+'">View post</a> <button class="btn" onclick="$(this).parent().remove();">Dismiss</button> </section>');
 	};
 });
 
@@ -553,7 +552,7 @@ $(document).ready(function() {
 });
 
 function refresh(nsfw) {
-	if (nsfw === 0 || nsfw === 1){
+	if (nsfw === false || nsfw === true){
 		showNSFW = nsfw;
 		store.set('showNSFW', nsfw)
 	}

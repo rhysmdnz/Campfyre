@@ -62,11 +62,6 @@
 				<h2>No Accounts.</h2>
 				<h2>Have fun.</h2>
 			</div>
-			<div class="campaigns">
-				<a href="https://play.google.com/store/apps/details?id=nz.co.nickwebster.campfyre">
-				<img style="height: 45px; width: auto;" alt="Android app on Google Play" src="http://developer.android.com/images/brand/en_app_rgb_wo_60.png" />
-				</a>
-			</div>
 			<section id="submit" class="card">
 				<h2 style="text-align: left;">Write a post</h2>
 				<form id='postForm' method="post">
@@ -137,7 +132,7 @@
 						$('#goBack').hide();
 					</script>
 					<a href="javascript:void(0);" onclick="refresh()">Refresh</a> | 
-					<span id="nsfwOption"></span><br><a href="https://github.com/NickGeek/Campfyre">Fork Campfyre on GitHub</a> | Robofaces lovingly delivered by <a target="_blank" href="http://robohash.org">Robohash.org</a><br><a href="about.html">About Campfyre</a> | Written and run by <a href="http://nick.geek.nz">Nick Webster</a>
+					<span id="nsfwOption"></span><br><a href="https://github.com/NickGeek/Campfyre">Fork Campfyre on GitHub</a> | Robofaces lovingly delivered by <a target="_blank" href="http://robohash.org">Robohash.org</a><br><a href="about.html">About Campfyre</a> | Written by <a href="http://nick.geek.nz">Nick Webster</a>
 				</h4>
 				<div id="phoneWritePost">
 					<span id="submitFAB" class="submit_open">WRITE A POST about</span><br/><br/>
@@ -145,10 +140,10 @@
 				<script>
 					function nsfwToggle() {
 						var verb = "";
-						var newOption = 0;
-						if (showNSFW === 0) {
+						var newOption = false;
+						if (showNSFW === false) {
 							verb = "Show ";
-							newOption = 1;
+							newOption = true;
 						}
 						else {
 							verb = "Hide ";
