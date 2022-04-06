@@ -30,7 +30,6 @@ error_log
 *.pydevproject
 .metadata
 .gradle
-bin/
 tmp/
 *.tmp
 *.bak
@@ -87,7 +86,6 @@ keys.xml
 *.class
 
 # Generated files
-bin/
 gen/
 
 # Gradle files
