@@ -172,10 +172,10 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 			if (text.length <= 256 && !spamming) {
 				var profanity = text.match(/(cum|jizz|pussy|penis|vagina|cock|dick|cunt|porn|p0rn|tits|tities|boob\S*|sex|ballsack|twat\S*)/im);
 				if (profanity != null || isNsfw){
-					var nsfw = 1;
+					var nsfw = "'1'";
 				}
 				else {
-					var nsfw = 0;
+					var nsfw = "'0'";
 				}
 				con.query("INSERT INTO posts (post, ip, hash_id, nsfw, time, attachment) VALUES ("+safeText+", "+format.literal(ip)+", "+format.literal(hash(salt+ip))+", "+nsfw+", "+time+", "+attachment+");", function (e) {
 					if (e) throw e;
@@ -212,7 +212,7 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 								socket.emit('success message', JSON.stringify({title: 'Post submitted', body: ''}));
 
 								//If the user isn't showing NSFW posts, and this post is NSFW show them
-								if (nsfw === 1) {
+								if (nsfw === "'1'") {
 									socket.emit('show nsfw');
 								}
 							}).bind(this, post));
