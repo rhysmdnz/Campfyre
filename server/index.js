@@ -565,6 +565,6 @@ function hash(input) {
 	return crypto.createHash('sha256').update(input).digest('hex');
 }
 
-http.listen(3973, function(){
-	console.log('listening on *:'+3973);
+http.listen(80, function(){
+	console.log('listening on *:'+80);
 });
