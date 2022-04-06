@@ -106,7 +106,7 @@ function stoke(id, ip, socket) {
 		if (e) throw e;
 
 		if (voters.rows[0].voters){
-			voters = voters[0].voters.split(',');
+			voters = voters.rows[0].voters.split(',');
 		}
 		else {
 			voters = [];
