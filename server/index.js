@@ -49,6 +49,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 		//Send the posts to the user
 		for (var i = 0; i < posts.rows.length; ++i) {
 			var post = posts.rows[i];
+			console.log(post);
 			con.query('SELECT * FROM comments WHERE \"parent\" = '+post.id+';', (function(i, post, e, comments) {
 				if (e) throw e;
 
@@ -75,9 +76,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 				}
 
 				//Are we subscribed to this post?
-				var test = "SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';";
-				console.log(test);
-				con.query(test, function(e, results) {
+				con.query("SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
 					if (e) throw e;
 
 					var notifylist = results.rows[0].notifylist;
