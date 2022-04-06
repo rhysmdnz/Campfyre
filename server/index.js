@@ -462,6 +462,7 @@ app.get('/tmp-api/post/:id', function(req, res) {
 			res.send(JSON.stringify(post));
 		});
 	} catch (e) {
+		console.log(e);
 		res.statusCode = 400;
 		res.send('Invalid Request');
 	}
