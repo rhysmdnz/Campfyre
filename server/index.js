@@ -32,7 +32,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 			search = search.substr(1, search.length);
 			extraChar = "#";
 		}
-		var query = "SELECT * FROM posts WHERE LOWER(\"post\") REGEXP '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
+		var query = "SELECT * FROM posts WHERE LOWER(\"post\") ~ '"+extraChar+"[[:<:]]"+search+"[[:>:]]' ORDER BY id DESC OFFSET "+format.literal(startingPost)+" LIMIT 50;";
 	}
 	else {
 		if (user) {
