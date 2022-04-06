@@ -61,8 +61,8 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 					post.commentNum = comments.rows.length+' comments';
 				}
 
-				for (var j = 0; j < comments.length; ++j) {
-					comments[j].ip = 'http://robohash.org/'+hash(salt+comments.rows[j].ip)+'.png?set=set4&size='+size;
+				for (var j = 0; j < comments.rows.length; ++j) {
+					comments.rows[j].ip = 'http://robohash.org/'+hash(salt+comments.rows[j].ip)+'.png?set=set4&size='+size;
 				}
 
 				post.comments = comments.rows;
