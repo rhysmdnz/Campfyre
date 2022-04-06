@@ -75,15 +75,15 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 				}
 
 				//Are we subscribed to this post?
-				var test = "SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';";
+				var test = "SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';";
 				console.log(test);
 				con.query(test, function(e, results) {
 					if (e) throw e;
 
-					var notifyList = results.rows[0].notifyList;
-					if (notifyList) {
-						notifyList = JSON.parse(notifyList);
-						if (notifyList.IPs.indexOf(ip) <= -1) {
+					var notifylist = results.rows[0].notifylist;
+					if (notifylist) {
+						notifylist = JSON.parse(notifylist);
+						if (notifylist.IPs.indexOf(ip) <= -1) {
 							post.subscribed = false;
 						}
 						else {
@@ -94,7 +94,7 @@ function getPosts(ip, size, search, startingPost, loadBottom, socket, reverse, u
 						post.subscribed = false;
 					}
 
-					delete post.notifyList;
+					delete post.notifylist;
 					delete post.voters;
 					socket.emit('new post', JSON.stringify(post));
 				});
@@ -209,7 +209,7 @@ function submitPost(text, attachment, catcher, ip, isNsfw, socket) {
 								post.ip = 'http://robohash.org/'+hash(salt+post.ip)+'.png?set=set4&size=64x64';
 								post.loadBottom = false;
 
-								delete post.notifyList;
+								delete post.notifylist;
 								delete post.voters;
 
 								ws.emit('new post', JSON.stringify(post));
@@ -260,15 +260,15 @@ function submitComment(parent, text, catcher, ip, commentParent, socket) {
 					ws.emit('new comment', JSON.stringify(commentData));
 
 					//Notifications
-					con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(parent)+"';", function(e, results) {
-							var notifyList = results.rows[0].notifyList;
+					con.query("SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(parent)+"';", function(e, results) {
+							var notifylist = results.rows[0].notifylist;
 							var update = false;
-							if (notifyList) {
-								notifyList = JSON.parse(notifyList);
-								for (var i = notifyList.IPs.length - 1; i >= 0; i--) {
-									if (notifyList.IPs[i] === ip) continue;
+							if (notifylist) {
+								notifylist = JSON.parse(notifylist);
+								for (var i = notifylist.IPs.length - 1; i >= 0; i--) {
+									if (notifylist.IPs[i] === ip) continue;
 
-									const ipToNotify = notifyList.IPs[i];
+									const ipToNotify = notifylist.IPs[i];
 									con.query("INSERT INTO \"notifications\" (ip, commentText, postID, commentID) VALUES ("+format.literal(ipToNotify)+", "+safeText+", "+format.literal(parent)+", "+commentData.id+");", () => {
 										const socketToNotify = users[ipToNotify];
 										if (!!socketToNotify) getNotifications(ipToNotify, socketToNotify);
@@ -347,11 +347,11 @@ function getPostInternal(size, id, ip, callback) {
 			post.loadBottom = false;
 
 			//Are we subscribed to this post?
-			con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
-				var notifyList = results.rows[0].notifyList;
-				if (notifyList) {
-					notifyList = JSON.parse(notifyList);
-					if (notifyList.IPs.indexOf(ip) <= -1) {
+			con.query("SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(post.id)+"';", function(e, results) {
+				var notifylist = results.rows[0].notifylist;
+				if (notifylist) {
+					notifylist = JSON.parse(notifylist);
+					if (notifylist.IPs.indexOf(ip) <= -1) {
 						post.subscribed = false;
 					}
 					else {
@@ -365,7 +365,7 @@ function getPostInternal(size, id, ip, callback) {
 				// Clear out data. This is not how you should do this.
 				post = { ...post };
 				delete post.voters;
-				delete post.notifyList;
+				delete post.notifylist;
 				callback(post);
 			});
 		}).bind(this, post));
@@ -391,25 +391,25 @@ function getStokeCount(id, socket) {
 function subscribe(id, subscribe, ip, socket) {
 	if (subscribe) {
 		//Subscribe to new comments
-		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
-				var notifyList = results.rows[0].notifyList;
+		con.query("SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
+				var notifylist = results.rows[0].notifylist;
 				var update = false;
-				if (notifyList) {
-					notifyList = JSON.parse(notifyList);
-					if (notifyList.IPs.indexOf(ip) <= -1) {
-						notifyList.IPs.push(ip);
-						notifyList = JSON.stringify(notifyList);
+				if (notifylist) {
+					notifylist = JSON.parse(notifylist);
+					if (notifylist.IPs.indexOf(ip) <= -1) {
+						notifylist.IPs.push(ip);
+						notifylist = JSON.stringify(notifylist);
 						var update = true;
 					}
 				}
 				else {
-					notifyList = JSON.stringify({IPs:[ip]});
+					notifylist = JSON.stringify({IPs:[ip]});
 					var update = true;
 				}
 
 				if (update) {
 					//Update database with new array
-					con.query("UPDATE \"posts\" SET \"notifyList\" = '"+notifyList+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
+					con.query("UPDATE \"posts\" SET \"notifylist\" = '"+notifylist+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
 						if (e) socket.emit('error message', JSON.stringify({title: 'Subscription failed', body: 'Please try again later'}));
 
 						socket.emit('success message', JSON.stringify({title: 'Subscribed', body: ''}));
@@ -421,14 +421,14 @@ function subscribe(id, subscribe, ip, socket) {
 		});
 	}
 	else {
-		con.query("SELECT \"notifyList\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
-				var notifyList = results.rows[0].notifyList;
-				if (notifyList) {
-					notifyList = JSON.parse(notifyList);
-					if (notifyList.IPs.indexOf(ip) > -1) {
-						notifyList.IPs.splice(notifyList.IPs.indexOf(ip), 1);
-						notifyList = JSON.stringify(notifyList);
-						con.query("UPDATE \"posts\" SET \"notifyList\" = '"+notifyList+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
+		con.query("SELECT \"notifylist\" FROM \"posts\" WHERE \"id\" = '"+addslashes(id)+"';", function(e, results) {
+				var notifylist = results.rows[0].notifylist;
+				if (notifylist) {
+					notifylist = JSON.parse(notifylist);
+					if (notifylist.IPs.indexOf(ip) > -1) {
+						notifylist.IPs.splice(notifylist.IPs.indexOf(ip), 1);
+						notifylist = JSON.stringify(notifylist);
+						con.query("UPDATE \"posts\" SET \"notifylist\" = '"+notifylist+"' WHERE \"id\" = '"+addslashes(id)+"';", function(e) {
 						if (e) socket.emit('error message', JSON.stringify({title: 'Unsubscription failed', body: 'Please try again later'}));
 
 						socket.emit('success message', JSON.stringify({title: 'Unsubscribed', body: ''}));

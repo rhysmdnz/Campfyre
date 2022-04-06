@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS posts (
   hash_id VARCHAR(64) NOT NULL,
   post VARCHAR(500) NOT NULL,
 
-  notifyList TEXT NULL,
+  notifylist TEXT NULL,
 
   nsfw BOOLEAN DEFAULT false NOT NULL,
   time INT NOT NULL,
